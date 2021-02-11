@@ -1,0 +1,10 @@
+varname,cmorname,scale
+so4a,mmrso4,1e-9
+nh4a,mmrnh4,1e-9
+no3a,mmrno3,1e-9
+naa,mmrna,1e-9
+cla,mmrcl,1e-9
+orgpa,mmroa,1.4e-9
+ec,mmrbc,1e-9
+p25,mmrdust,1e-9
+

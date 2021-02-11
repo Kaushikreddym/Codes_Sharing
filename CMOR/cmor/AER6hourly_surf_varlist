@@ -1,0 +1,10 @@
+varname,cmorname,scale
+so4a,sconcso4,1e-9
+nh4a,sconcnh4,1e-9
+no3a,sconcno3,1e-9
+naa,sconcna,1e-9
+cla,sconccl,1e-9
+orgpa,sconcpoa,1.4e-9
+ec,sconcbc,1e-9
+p25,sconcdust,1e-9
+

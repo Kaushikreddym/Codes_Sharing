@@ -1,0 +1,10 @@
+varname,cmorname,scale,units
+
+PBLH,zmla,1,m
+rh2,hurs,1,%
+slp,psl,100,Pa
+uvmet10,uas,1,m s-1
+uvmet10,vas,1,m s-1
+wspd_wdir10,sfcWind,1,m s-1
+ctt,ttop,1,K
+T2,tas,1,K

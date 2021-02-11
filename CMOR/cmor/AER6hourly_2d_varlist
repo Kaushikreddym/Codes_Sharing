@@ -1,0 +1,10 @@
+varname,cmorname,scale
+so4a,loadso4,1e-9
+nh4a,loadnh4,1e-9
+no3a,loadno3,1e-9
+naa,loadna,1e-9
+cla,loadcl,1e-9
+orgpa,loadpoa,1.4e-9
+ec,loadbc,1e-9
+p25,loaddust,1e-9
+

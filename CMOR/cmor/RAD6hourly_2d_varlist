@@ -1,0 +1,22 @@
+varname,cmorname,units
+SWUPT,rsut,W m-2
+SWUPTC,rsutcs,W m-2
+SWDNT,rsdt,W m-2
+SWDNTC,rsdtcs,W m-2
+SWUPB,rsus,W m-2
+SWUPBC,rsuscs,W m-2
+SWDNB,rsds,W m-2
+SWDNBC,rsdscs,W m-2
+LWUPT,rlut,W m-2
+LWUPTC,rlutcs,W m-2
+LWDNT,rldt,W m-2
+LWDNTC,rldtcs,W m-2
+LWUPB,rlus,W m-2
+LWUPBC,rluscs,W m-2
+LWDNB,rlds,W m-2
+LWDNBC,rldscs,W m-2
+OLR,rlut ,W m-2
+HFX,hfss,W m-2
+LH,hfls,W m-2
+SWDOWN,rss,W m-2
+GLW,rls,W m-2

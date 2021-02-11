@@ -1,0 +1,4 @@
+cmorname,varname,scale,units
+
+lwp,QCLOUD,1,kg m-2
+cldnvi,QNDROP,1,m-2

@@ -1,0 +1,9 @@
+cmorname,varname,scale
+
+hus27,QVAPOR,1 
+grplmxrat27,QGRAUP,1
+cldicemxrat27,QICE,1
+cldwatmxrat27,QCLOUD,1
+snowmxrat27,QSNOW,1
+rainmxrat27,QRAIN,1
+
