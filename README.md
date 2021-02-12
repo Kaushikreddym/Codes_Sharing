@@ -2,7 +2,7 @@
 ## Hey this is code sharing repo
 
 Collaborators: 
-**Kaushik Muduchuru
-**Arushi Sharma 
-**Sandeep Devaliaya
+** Kaushik Muduchuru
+** Arushi Sharma 
+** Sandeep Devaliaya
 
