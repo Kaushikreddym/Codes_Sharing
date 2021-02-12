@@ -1,7 +1,8 @@
 # Kaushik Reddy M
 ## Hey this is code sharing repo
 
-Collaborators: Arushi and Sandeep
+Collaborators: 
+* Kaushik Muduchuru
+* Arushi Sharma 
+* Sandeep Devaliaya
 
-
-This is collab branch.
