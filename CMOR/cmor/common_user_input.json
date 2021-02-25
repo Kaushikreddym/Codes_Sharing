@@ -6,7 +6,7 @@
 
            "tracking_prefix":        "hdl:21.14100",
            "activity_id":            "NCAP-COALESCE",
-           "outpath":                "/mnt/nas/DATA/kaushik/proc/processed",
+           "outpath":                "/mnt/nas/DATA/kaushik/proc/test",
 
            "#experiment_id":         "CMIP6 valid experiment_ids are found in CMIP6_CV.json",
            "experiment_id":          "BASELINE",
