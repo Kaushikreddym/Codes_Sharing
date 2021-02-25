@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
 import numpy as np
 import xarray as xray
 from glob import glob
@@ -18,139 +12,11 @@ import subprocess as sp
 import sys
 import numpy as np
 
+from cmor_func import *
 
-# In[2]:
-
-
-def make_bounds(data):
-    data_b = np.zeros(data.shape[0] + 1)
-    if data.shape[0] == 1:
-        data_b[0] = 0.0
-        data_b[1] = 2 * data[0]
-    else:
-
-        # print(data[1], data[0])
-
-        deldata = (float(data[1]) - float(data[0])) / 2
-
-        # print(deldata)
-
-        data_b[0] = data[0] - deldata
-        deldata = (data[data.shape[0] - 1] - data[data.shape[0] - 2])             / 2
-        data_b[data.shape[0]] = data[data.shape[0] - 1] + deldata
-        for i in range(data.shape[0] - 1):
-            data_b[i + 1] = (data[i] + data[i + 1]) / 2
-    return data_b
-
-
-def create_ilon(lon):  # creates longitude axis
-    lonb = make_bounds(lon)
-    ilon = cmor.axis(table_entry='longitude', units='degrees_east',
-                     coord_vals=lon, cell_bounds=lonb)
-    return ilon
-
-
-def create_ilat(lat):  # creates latitude axis
-    latb = make_bounds(lat)
-    ilat = cmor.axis(table_entry='latitude', units='degrees_north',
-                     coord_vals=lat, cell_bounds=latb)
-    return ilat
-
-
-def create_itime(time):  # creates time axis
-    timeb = make_bounds(time)
-    itime = cmor.axis('time', units='days since 2015')
-    return itime
-
-
-def create_ilevel(level):  # creates pressure axis
-    levelb = make_bounds(level)
-    ilevel = cmor.axis('plev27', coord_vals=level, units='Pa',
-                       cell_bounds=levelb)
-    return ilevel
-
-
-def cmorize_2d(
-    lat,
-    lon,
-    time,
-    data,
-    units,
-    scale,
-    cmorname,
-    table,
-    ):
-
-    # 'cmorize_2d' takes arrays and corresponding dimensions to convert data into CF compliant format
-    #
-
-    cmor.setup(inpath='../cmor/TestTables',
-               netcdf_file_action=cmor.CMOR_REPLACE_4)
-    cmor.dataset_json('../cmor/common_user_input.json')
-    cmor.load_table(table)  # 'table corresponds to the json table containing variable information'
-
-    ilat = create_ilat(lat)
-    ilon = create_ilon(lon)
-    itime = create_itime(time)
-
-    axes = [itime, ilat, ilon]
-    ivar = cmor.variable(cmorname, units, axes,positive="up")
-
-    timeb = make_bounds(time)
-
-    cmor.write(ivar, data * scale, time_vals=time, time_bnds=timeb)
-    filename = cmor.close(ivar, file_name=True)
-    print ('stored in :', filename)
-    cmor.close()
-
-
-def cmorize_3d(
-    lat,
-    lon,
-    time,
-    level,
-    data,
-    units,
-    scale,
-    cmorname,
-    table,
-    ):
-
-    # similar to the 'cmorize_2d' function but for 3d variables with added pressure dimension
-
-    cmor.setup(inpath='../cmor/TestTables',
-               netcdf_file_action=cmor.CMOR_REPLACE_4)
-    cmor.dataset_json('../cmor/common_user_input.json')
-    cmor.load_table(table)
-
-    ilat = create_ilat(lat)
-    ilon = create_ilon(lon)
-    ilevel = create_ilevel(level)
-    itime = create_itime(time)
-
-    axes = [itime, ilevel, ilat, ilon]
-
-    timeb = make_bounds(time)
-
-    ivar = cmor.variable(cmorname, units, axes)
-    cmor.write(ivar, data * scale, time_vals=time, time_bnds=timeb)
-    filename = cmor.close(ivar, file_name=True)
-    print ('stored in :', filename)
-    cmor.close()
-
-
-def read_cmor():
-    flist = sorted(glob(REL_PATH + DATE + '/' + fname_prefix + '*'))[1:]
-    ncfile = [Dataset(f) for f in flist]
-    dset = getvar(ncfile, aerlist.loc[i]['varname'], timeidx=ALL_TIMES,
-                  method='cat')
-
-
-# In[3]:
-
-
-REL_PATH='/mnt/stime/scratch/PartclAeroResLab/kaushik.reddy.m/3.9.1/sam/run_cpu80/fc/'
-#REL_PATH='/mnt/nas/DATA/kaushik/raw/SURFACE_stime/fc/'
+#REL_PATH='/mnt/stime/scratch/PartclAeroResLab/kaushik.reddy.m/3.9.1/sam/run_cpu80/fc/'
+fold = 'only_WRF10'
+REL_PATH='/mnt/nas/DATA/kaushik/raw/'+fold+'/fc/'
 fname_prefix = 'wrfout_d01_'
 plevs = [
     100000.,
@@ -186,23 +52,23 @@ plevs = [
 # In[ ]:
 
 
-for mon_no in ['02','03','04','05','06']:#[ '01','02','03','04','05','06','07','08','09','10','11','12']:
+for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','11','12']:
     datelist = [sorted(glob(REL_PATH + '/2015' + mon_no + '*'
                 ))[i].split('/')[-1] for i in
                 range(len(sorted(glob(REL_PATH + '/2015' + mon_no + '*'
-                ))))]  # get the folders inside the fc folder
+                ))))][:6]  # get the folders inside the fc folder
 
-    flag_met = 1
+    flag_met = 0
     flag_rain = 1
-    flag_aod = 1
-    flag_soa = 1
-    flag_aerosol = 1
-    flag_cloud = 1
-    flag_rad = 1
-    flag_cdnc = 1
-    flag_cf =1
-    flag_tau=0
-    flag_pres = 1
+    flag_aod = 0
+    flag_soa = 0
+    flag_aerosol = 0
+    flag_cloud = 0
+    flag_rad = 0
+    flag_cdnc = 0
+    flag_cf = 1
+    flag_tau= 0
+    flag_pres = 0
     flag_gas = 0
     table = 'CMIP6_1hr.json'
     
@@ -218,6 +84,7 @@ for mon_no in ['02','03','04','05','06']:#[ '01','02','03','04','05','06','07','
     if flag_rain == 1:
         dset_PR = []
         dset_PRCSH = []
+        dset_PRRA = []
         dset_PRC = []
         for DATE in datelist:
             print(DATE)
@@ -229,22 +96,26 @@ for mon_no in ['02','03','04','05','06']:#[ '01','02','03','04','05','06','07','
             ncfile = [Dataset(f) for f in flist]
             dset_C = getvar(ncfile, 'RAINC', timeidx=ALL_TIMES,
                             method='cat')
-            dset_SH = getvar(ncfile, 'RAINSH', timeidx=ALL_TIMES,
-                             method='cat')  # + getvar(ncfile,'RAINNC', timeidx=ALL_TIMES, method="cat").data
-            dset = dset_C + dset_SH.data
+            dset_SH = getvar(ncfile, 'RAINNC', timeidx=ALL_TIMES,
+                             method='cat')
+            dset_SC = getvar(ncfile, 'RAINSH', timeidx=ALL_TIMES,
+                             method='cat')
+            dset = dset_C + dset_SH.data + dset_SC.data
 
             dset_pr = dset[1:] - dset[:-1].data
             dset_sh = dset_SH[1:] - dset_SH[:-1].data
+            dset_sc = dset_SC[1:] - dset_SC[:-1].data
             dset_c = dset_C[1:] - dset_C[:-1].data
 
             dset_PR.append(dset_pr)
-            dset_PRCSH.append(dset_sh)
+            dset_PRCSH.append(dset_sc)
+            dset_PRRA.append(dset_sh)
             dset_PRC.append(dset_c)
 
         dset_PR = xray.concat(dset_PR, 'Time')
         dset_PRCSH = xray.concat(dset_PRCSH, 'Time')
         dset_PRC = xray.concat(dset_PRC, 'Time')
-
+        dset_PRRA = xray.concat(dset_PRRA, 'Time')
         # level = np.array(plevs)
 
         (lat, lon, level, time) = get_attrs(dset_PR)
@@ -265,7 +136,7 @@ for mon_no in ['02','03','04','05','06']:#[ '01','02','03','04','05','06','07','
             dset_PRCSH.data * 3600 ** -1,
             'kg m-2 s-1',
             1,
-            'prcsh',
+            'prsh',
             table,
             )
         cmorize_2d(
@@ -275,7 +146,17 @@ for mon_no in ['02','03','04','05','06']:#[ '01','02','03','04','05','06','07','
             dset_PRC.data * 3600 ** -1,
             'kg m-2 s-1',
             1,
-            'prc',
+            'prrc',
+            table,
+            )
+        cmorize_2d(
+            lat,
+            lon,
+            time,
+            dset_PRRA.data * 3600 ** -1,
+            'kg m-2 s-1',
+            1,
+            'prcsh',
             table,
             )
 
@@ -847,175 +728,224 @@ for mon_no in ['02','03','04','05','06']:#[ '01','02','03','04','05','06','07','
                 aerlist.loc[i]['cmorname'],
                 table,
                 )
-    if flag_cdnc == 1:
-        
-            dset_DA = []
-            dset_z = []
-            for DATE in datelist:
-                print(DATE)
-                flist = sorted(glob(REL_PATH + DATE + '/'
-                               + fname_prefix + '*'))
+    if flag_cdnc == 1: 
+        dset_DA = []
+        dset_z = []
+        for DATE in datelist:
+            print(DATE)
+            flist = sorted(glob(REL_PATH + DATE + '/'
+                           + fname_prefix + '*'))
 
-                # flist = sorted([glob(REL_PATH+DATE+'/'+fname_prefix+'*'+i+':00:00*') for i in ['00','06','12','18']])[1:]
+            # flist = sorted([glob(REL_PATH+DATE+'/'+fname_prefix+'*'+i+':00:00*') for i in ['00','06','12','18']])[1:]
 
-                ncfile = [Dataset(f) for f in flist[1:]]
-                dset = getvar(ncfile, 'QNDROP',
-                              timeidx=ALL_TIMES, method='cat')
-                pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
-                              method='cat')
-                tk = getvar(ncfile, 'tk', timeidx=ALL_TIMES,
-                            method='cat')
-                rho = pres.data * 1e2 * 28.979 * 1e-3 / (8.314
-                        * tk.data)
-                
+            ncfile = [Dataset(f) for f in flist[1:]]
+            dset = getvar(ncfile, 'QNDROP',
+                          timeidx=ALL_TIMES, method='cat')
+            pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
+                          method='cat')
+            tk = getvar(ncfile, 'tk', timeidx=ALL_TIMES,
+                        method='cat')
+            rho = pres.data * 1e2 * 28.979 * 1e-3 / (8.314
+                    * tk.data)
+            
 
-                dset_interp = interplevel(dset*rho.data, pres, np.array(plevs)
-                        / 100)
-                dset_DA.append(dset_interp)
-            dset_DA = xray.concat(dset_DA, 'Time')
+            dset_interp = interplevel(dset*rho.data, pres, np.array(plevs)
+                    / 100)
+            dset_DA.append(dset_interp)
+        dset_DA = xray.concat(dset_DA, 'Time')
 
-            (lat, lon, level, time) = get_attrs(dset_DA)
+        (lat, lon, level, time) = get_attrs(dset_DA)
 
-            data_cloud = dset_DA.data
-            scale = 1
-            cmorname = 'cdnc'
-            units = 'm-3'
-            table = 'CMIP6_cloud_1hr.json'
-            cmorize_3d(
-                lat,
-                lon,
-                time,
-                level,
-                data_cloud,
-                units,
-                scale,
-                cmorname,
-                table,
-                )
- 
+        data_cloud = dset_DA.data
+        scale = 1
+        cmorname = 'cdnc'
+        units = 'm-3'
+        table = 'CMIP6_cloud_1hr.json'
+        cmorize_3d(
+            lat,
+            lon,
+            time,
+            level,
+            data_cloud,
+            units,
+            scale,
+            cmorname,
+            table,
+            ) 
     if flag_tau == 1:
-        
-            dset_DA = []
-            dset_z = []
-            for DATE in datelist:
-                print(DATE)
-                flist = sorted(glob(REL_PATH + DATE + '/'
-                               + fname_prefix + '*'))
+        dset_DA = []
+        dset_z = []
+        for DATE in datelist:
+            print(DATE)
+            flist = sorted(glob(REL_PATH + DATE + '/'
+                           + fname_prefix + '*'))
 
-                # flist = sorted([glob(REL_PATH+DATE+'/'+fname_prefix+'*'+i+':00:00*') for i in ['00','06','12','18']])[1:]
-                #from scipy.special import Gamma
-                ncfile = [Dataset(f) for f in flist[1:]]
-                dset_Nd = getvar(ncfile, 'QNDROP',
-                              timeidx=ALL_TIMES, method='cat')
-                dset_qc = getvar(ncfile, 'QCLOUD',
-                              timeidx=ALL_TIMES, method='cat')
-                pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
-                              method='cat')
-                tk = getvar(ncfile, 'tk', timeidx=ALL_TIMES,
-                            method='cat')
-                rho = pres.data * 1e2 * 28.979 * 1e-3 / (8.314
-                        * tk.data)
-                
+            # flist = sorted([glob(REL_PATH+DATE+'/'+fname_prefix+'*'+i+':00:00*') for i in ['00','06','12','18']])[1:]
+            #from scipy.special import Gamma
+            ncfile = [Dataset(f) for f in flist[1:]]
+            dset_Nd = getvar(ncfile, 'QNDROP',
+                          timeidx=ALL_TIMES, method='cat')
+            dset_qc = getvar(ncfile, 'QCLOUD',
+                          timeidx=ALL_TIMES, method='cat')
+            pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
+                          method='cat')
+            tk = getvar(ncfile, 'tk', timeidx=ALL_TIMES,
+                        method='cat')
+            rho = pres.data * 1e2 * 28.979 * 1e-3 / (8.314
+                    * tk.data)
+            
 
-                dset_interp = interplevel(dset*rho.data, pres, np.array(plevs)
-                        / 100)
-                dset_DA.append(dset_interp)
-            dset_DA = xray.concat(dset_DA, 'Time')
+            dset_interp = interplevel(dset*rho.data, pres, np.array(plevs)
+                    / 100)
+            dset_DA.append(dset_interp)
+        dset_DA = xray.concat(dset_DA, 'Time')
 
-            (lat, lon, level, time) = get_attrs(dset_DA)
+        (lat, lon, level, time) = get_attrs(dset_DA)
 
-            data_cloud = dset_DA.data
-            scale = 1
-            cmorname = 'cdnc'
-            units = 'm-3'
-            table = 'CMIP6_cloud_1hr.json'
-            cmorize_3d(
-                lat,
-                lon,
-                time,
-                level,
-                data_cloud,
-                units,
-                scale,
-                cmorname,
-                table,
-                )
-    if flag_cf == 1:
-        
-            dset_DA = []
-            dset_z = []
-            for DATE in datelist:
-                print(DATE)
-                flist = sorted(glob(REL_PATH + DATE + '/'
-                               + fname_prefix + '*'))
+        data_cloud = dset_DA.data
+        scale = 1
+        cmorname = 'cdnc'
+        units = 'm-3'
+        table = 'CMIP6_cloud_1hr.json'
+        cmorize_3d(
+            lat,
+            lon,
+            time,
+            level,
+            data_cloud,
+            units,
+            scale,
+            cmorname,
+            table,
+            )
+    if flag_cf == 1: 
+        dset_DA = []
+        dset_z = []
+        for DATE in datelist:
+            print(DATE)
+            flist = sorted(glob(REL_PATH + DATE + '/'
+                           + fname_prefix + '*'))
 
-                # flist = sorted([glob(REL_PATH+DATE+'/'+fname_prefix+'*'+i+':00:00*') for i in ['00','06','12','18']])[1:]
+            # flist = sorted([glob(REL_PATH+DATE+'/'+fname_prefix+'*'+i+':00:00*') for i in ['00','06','12','18']])[1:]
 
-                ncfile = [Dataset(f) for f in flist[1:]]
-                dset = getvar(ncfile, 'CLDFRA',
-                              timeidx=ALL_TIMES, method='cat')
-                pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
-                              method='cat')
- 
-                dset_interp = interplevel(dset, pres, np.array(plevs)
-                        / 100)
-                dset_DA.append(dset_interp)
-            dset_DA = xray.concat(dset_DA, 'Time')
+            ncfile = [Dataset(f) for f in flist[1:]]
+            dset = getvar(ncfile, 'CLDFRA',
+                          timeidx=ALL_TIMES, method='cat')
+            pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
+                          method='cat')
 
-            (lat, lon, level, time) = get_attrs(dset_DA)
+            dset_interp = interplevel(dset, pres, np.array(plevs)
+                    / 100)
+            dset_DA.append(dset_interp)
+        dset_DA = xray.concat(dset_DA, 'Time')
 
-            scale = 1
-            cmorname = 'cldfra'
-            units = '1'
-            table = 'CMIP6_cloud_1hr.json'
-            cmorize_3d(
-                lat,
-                lon,
-                time,
-                level,
-                dset_DA.data,
-                units,
-                scale,
-                cmorname,
-                table,
-                )
-    if flag_pres == 1:
-        
-            dset_DA = []
-            dset_z = []
-            for DATE in datelist:
-                print(DATE)
-                flist = sorted(glob(REL_PATH + DATE + '/'
-                               + fname_prefix + '*'))
+        (lat, lon, level, time) = get_attrs(dset_DA)
 
-                # flist = sorted([glob(REL_PATH+DATE+'/'+fname_prefix+'*'+i+':00:00*') for i in ['00','06','12','18']])[1:]
+        scale = 1
+        cmorname = 'cldfra'
+        units = '1'
+        table = 'CMIP6_cloud_1hr.json'
+        cmorize_3d(
+            lat,
+            lon,
+            time,
+            level,
+            dset_DA.data,
+            units,
+            scale,
+            cmorname,
+            table,
+            )
+        dset_frac = []
+        for DATE in datelist:
+            print(DATE)
+            # flist = sorted(glob(REL_PATH+DATE+'/'+fname_prefix+'*'))
+            flist = sorted(glob(REL_PATH + DATE + '/' + fname_prefix
+                           + '*'))[1:]
+            ncfile = [Dataset(f) for f in flist]
+            dset = getvar(ncfile, 'cloudfrac', timeidx=ALL_TIMES,
+                                method='cat',vert_type='pres',low_thresh=97000,mid_thresh=68000,high_thresh=40000)
+            dset_frac.append(dset)
+        dset_frac = xray.concat(dset_frac, 'Time')
 
-                ncfile = [Dataset(f) for f in flist[1:]]
-                pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
-                              method='cat')
-                dset_interp = interplevel(pres, pres, np.array(plevs)
-                        / 100)
-                dset_DA.append(dset_interp)
-            dset_DA = xray.concat(dset_DA, 'Time')
+        scale = 1
+        units = '%'
+        table = 'CMIP6_cloud_1hr.json'
 
-            (lat, lon, level, time) = get_attrs(dset_DA)
+        (lat, lon, level, time) = get_attrs(dset_frac)
 
-            data_cloud = dset_DA.data
-            scale = 1
-            cmorname = 'pfull'
-            units = 'Pa'
-            table = 'CMIP6_1hr.json'
-            cmorize_3d(
-                lat,
-                lon,
-                time,
-                level,
-                data_cloud,
-                units,
-                scale,
-                cmorname,
-                table,
-                )
+        cmorname = 'clh'
+        cldlev = 'high'
+        cmorize_2d(
+            lat,
+            lon,
+            time,
+            dset_frac.sel(low_mid_high = cldlev).data,
+            units,
+            scale,
+            cmorname,
+            table,
+            )
+        cmorname = 'clm'
+        cldlev = 'mid'
+        cmorize_2d(
+            lat,
+            lon,
+            time,
+            dset_frac.sel(low_mid_high = cldlev).data,
+            units,
+            scale,
+            cmorname,
+            table,
+            )
+        cmorname = 'cll'
+        cldlev = 'low'
+        cmorize_2d(
+            lat,
+            lon,
+            time,
+            dset_frac.sel(low_mid_high = cldlev).data,
+            units,
+            scale,
+            cmorname,
+            table,
+            )
+    if flag_pres == 1: 
+        dset_DA = []
+        dset_z = []
+        for DATE in datelist:
+            print(DATE)
+            flist = sorted(glob(REL_PATH + DATE + '/'
+                           + fname_prefix + '*'))
+
+            # flist = sorted([glob(REL_PATH+DATE+'/'+fname_prefix+'*'+i+':00:00*') for i in ['00','06','12','18']])[1:]
+
+            ncfile = [Dataset(f) for f in flist[1:]]
+            pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
+                          method='cat')
+            dset_interp = interplevel(pres, pres, np.array(plevs)
+                    / 100)
+            dset_DA.append(dset_interp)
+        dset_DA = xray.concat(dset_DA, 'Time')
+
+        (lat, lon, level, time) = get_attrs(dset_DA)
+
+        data_cloud = dset_DA.data
+        scale = 1
+        cmorname = 'pfull'
+        units = 'Pa'
+        table = 'CMIP6_1hr.json'
+        cmorize_3d(
+            lat,
+            lon,
+            time,
+            level,
+            data_cloud,
+            units,
+            scale,
+            cmorname,
+            table,
+            )
     if flag_gas == 1:
         varname_plev=pd.read_csv('../cmor/varname_plev.csv')
         varname_sconc=pd.read_csv('../cmor/varname_sconc.csv')
