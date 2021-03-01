@@ -6,7 +6,7 @@
 
            "tracking_prefix":        "hdl:21.14100",
            "activity_id":            "NCAP-COALESCE",
-           "outpath":                "/mnt/nas/DATA/kaushik/proc/test",
+           "outpath":                "/mnt/nas/DATA/kaushik/proc/oWRF10",
 
            "#experiment_id":         "CMIP6 valid experiment_ids are found in CMIP6_CV.json",
            "experiment_id":          "BASELINE",
@@ -33,7 +33,7 @@
            "#comment":                "",
 
            "#references":            "Not required",
-           "references": "Model described by Swapna, P., et. al (2015), Bulletin of the American Meteorological Society, 96(8), 1351–1368.",
+           "references": "Model described by Grell et al. Atmospheric Environment (2005)",
 
            "grid":                   "gs2x2",
            "grid_label":             "gn",

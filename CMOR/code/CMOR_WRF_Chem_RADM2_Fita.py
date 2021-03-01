@@ -13,9 +13,11 @@ import sys
 import numpy as np
 
 from cmor_func import *
+import dask
+from dask.diagnostics import ProgressBar
 
 #REL_PATH='/mnt/stime/scratch/PartclAeroResLab/kaushik.reddy.m/3.9.1/sam/run_cpu80/fc/'
-fold = 'only_WRF10'
+fold = 'BASELINE'
 REL_PATH='/mnt/nas/DATA/kaushik/raw/'+fold+'/fc/'
 fname_prefix = 'wrfout_d01_'
 plevs = [
@@ -56,7 +58,7 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
     datelist = [sorted(glob(REL_PATH + '/2015' + mon_no + '*'
                 ))[i].split('/')[-1] for i in
                 range(len(sorted(glob(REL_PATH + '/2015' + mon_no + '*'
-                ))))][:6]  # get the folders inside the fc folder
+                    ))))][:3]  # get the folders inside the fc folder
 
     flag_met = 0
     flag_rain = 0
@@ -67,10 +69,10 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
     flag_rad = 0
     flag_cdnc = 0
     flag_cf = 0
-    flag_cloudvi = 1
+    flag_cloudvi = 0
     flag_tau= 0
     flag_pres = 0
-    flag_gas = 0
+    flag_gas = 1
     table = 'CMIP6_1hr.json'
     
     def get_attrs(dset):
@@ -202,7 +204,7 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
             dset_z = []
             for DATE in datelist:
 
-                # print(DATE)
+                print(DATE)
                 # flist = sorted(glob(REL_PATH+DATE+'/'+fname_prefix+'*'))
 
                 flist = sorted(glob(REL_PATH + DATE + '/'
@@ -210,14 +212,16 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
                 ncfile = [Dataset(f) for f in flist]
                 dset = getvar(ncfile, aerlist.loc[i]['varname'],
                               timeidx=ALL_TIMES, method='cat')
+                dset = dset.chunk({'Time':4})
                 pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
                               method='cat')
 
                 # tk = getvar(ncfile,"tk", timeidx=ALL_TIMES, method="cat")
-
+                #with ProgressBar(): 
                 dset_interp = interplevel(dset, pres, np.array(plevs)
                         / 100)
                 dset_DA.append(dset_interp)
+            
             dset_DA = xray.concat(dset_DA, 'Time')
             if aerlist.loc[i]['cmorname'] == 'zg':
                 units = 'm'
@@ -225,17 +229,18 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
                 units = dset.units
 
             (lat, lon, level, time) = get_attrs(dset_DA)
-            cmorize_3d(
-                lat,
-                lon,
-                time,
-                level,
-                dset_DA.data,
-                units,
-                aerlist.loc[i]['scale'],
-                aerlist.loc[i]['cmorname'],
-                table,
-                )
+            with ProgressBar(): 
+                cmorize_3d(
+                    lat.compute(),
+                    lon.compute(),
+                    time,
+                    level,
+                    dset_DA.compute().data,
+                    units,
+                    aerlist.loc[i]['scale'],
+                    aerlist.loc[i]['cmorname'],
+                    table,
+                    )
 
         #"""
 
@@ -654,11 +659,6 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
                 cmorname,
                 table,
                 )
-
-        #aerlist = pd.read_csv('../cmor/CLOUD6hourly_2d_varlist')
-
-        #for i in range(aerlist.shape[0]):
-        #print(aerlist.loc[i]['cmorname'])
     if flag_cloudvi == 1:
         dset_DA = []
         dset_z = []
@@ -671,17 +671,25 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
 
             ncfile = [Dataset(f) for f in flist[1:]]
             dsetvar=[]
-            for varname in ['QVAPOR','QCLOUD','QRAIN','QICE','QSNOW','QGRAUP']:
-                dset = getvar(ncfile,varname,timeidx=ALL_TIMES, method='cat')
-                dsetvar.append(dset)
-            dset = xray.concat(dsetvar,pd.Index(['QVAPOR','QCLOUD','QRAIN','QICE','QSNOW','QGRAUP'],name='var'))
-            
+            if flag_cdnc==1:
+                for varname in ['QVAPOR','QCLOUD','QRAIN','QICE','QSNOW','QGRAUP','QNDROP']:
+                    dset = getvar(ncfile,varname,timeidx=ALL_TIMES, method='cat')
+                    dsetvar.append(dset)
+                dset = xray.concat(dsetvar,pd.Index(['QVAPOR','QCLOUD','QRAIN','QICE','QSNOW','QGRAUP','QNDROP'],name='var'))
+                dset_cldnvi =dset.sel(var='QNDROP').drop('var')
+            else:
+                for varname in ['QVAPOR','QCLOUD','QRAIN','QICE','QSNOW','QGRAUP']:
+                    dset = getvar(ncfile,varname,timeidx=ALL_TIMES, method='cat')
+                    dsetvar.append(dset)
+                dset = xray.concat(dsetvar,pd.Index(['QVAPOR','QCLOUD','QRAIN','QICE','QSNOW','QGRAUP'],name='var'))
             dset_prw = dset.sel(var='QVAPOR').drop('var')
             dset_clwvi = dset.sel(var=['QCLOUD','QRAIN']).sum('var')
             dset_clivi = dset.sel(var=['QICE','QSNOW','QGRAUP']).sum('var')
-            
-            dset = xray.concat([dset_prw,dset_clwvi,dset_clivi],pd.Index(['prw','clwvi','clivi'],name='var'))
-            
+            if flag_cdnc==1:
+                dset = xray.concat([dset_prw,dset_clwvi,dset_clivi,dset_cldnvi],pd.Index(['prw','clwvi','clivi','cldnvi'],name='var'))
+            else:
+                dset = xray.concat([dset_prw,dset_clwvi,dset_clivi],pd.Index(['prw','clwvi','clivi'],name='var'))
+              
             #METHOD 1
             #pres = getvar(ncfile, 'pressure', timeidx=ALL_TIMES,
             #              method='cat')
@@ -713,6 +721,19 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
                 lon,
                 time,
                 dset_DA.sel(var=cmorname).data,
+                units,
+                scale,
+                cmorname,
+                table,
+                )
+        if flag_cdnc==1:
+            units = "m-2"
+            table = 'CMIP6_cloud_1hr.json'
+            cmorize_2d(
+                lat,
+                lon,
+                time,
+                dset_DA.sel(var='cldnvi').data,
                 units,
                 scale,
                 cmorname,
@@ -965,60 +986,83 @@ for mon_no in ['01','02']:#[ '01','02','03','04','05','06','07','08','09','10','
             table,
             )
     if flag_gas == 1:
-        varname_plev=pd.read_csv('../cmor/varname_plev.csv')
-        varname_sconc=pd.read_csv('../cmor/varname_sconc.csv')
+        
+        varname_plev=pd.read_csv('../cmor/varname_plev_shortlist.csv')
+        varname_sconc=pd.read_csv('../cmor/varname_sconc_shortlist.csv')
+        
         for i in range(varname_sconc.shape[0]):
+            print(varname_plev.loc[i]['varname'])
             dset_load = []
+            dset_tropload = []
             dset_sconc = []
             dset_plev = []
+            dset_svmr = []
             
-            if varname_plev.loc[i]['varname']!='nan':
+            for DATE in datelist: # put datelist[:n] to process first n files
+                print(DATE) 
+                flist = sorted(glob(REL_PATH+DATE+'/'+fname_prefix+'*'))
+                ncfile = [Dataset(f) for f in flist[1:]] # 1 neglects the 1st file of each 12 hour segment
+                dset = getvar(ncfile,varname_plev.loc[i]['varname'], timeidx=ALL_TIMES, method="cat")
+                lat = getvar(ncfile,"latitude", timeidx=ALL_TIMES, method="cat")
+                lon = getvar(ncfile,"longitude", timeidx=ALL_TIMES, method="cat")
 
-                for DATE in datelist: # put datelist[:n] to process first n files
-                    print(DATE) 
-                    flist = sorted(glob(REL_PATH+DATE+'/'+fname_prefix+'*'))
-                    ncfile = [Dataset(f) for f in flist[1:]] # 1 neglects the 1st file of each 12 hour segment
-                    dset = getvar(ncfile,varname_plev.loc[i]['varname'], timeidx=ALL_TIMES, method="cat")
-                    lat = getvar(ncfile,"latitude", timeidx=ALL_TIMES, method="cat")
-                    lon = getvar(ncfile,"longitude", timeidx=ALL_TIMES, method="cat")
+                pres = getvar(ncfile,"pressure", timeidx=ALL_TIMES, method="cat")
+                tk = getvar(ncfile,"tk", timeidx=ALL_TIMES, method="cat")
+                mod_height=getvar(ncfile,"zstag", timeidx=ALL_TIMES, method="cat")
 
-                    pres = getvar(ncfile,"pressure", timeidx=ALL_TIMES, method="cat")
-                    tk = getvar(ncfile,"tk", timeidx=ALL_TIMES, method="cat")
-                    mod_height=getvar(ncfile,"zstag", timeidx=ALL_TIMES, method="cat")
+                mod_thick = mod_height[:,1:].data-mod_height[:,:-1].data #calculating thickness of each level
+                molec_vol = 8.314*tk.data/(pres.data*100)  # m3 mol-1    (molar volume) 
 
-                    mod_thick = mod_height[:,1:].data-mod_height[:,:-1].data #calculating thickness of each level
-                    molec_vol = 8.314*tk.data/(pres.data*100)  # m3 mol-1    (molar volume) 
+                dset_col = dset*6.022e23*mod_thick/molec_vol.data 
+                dset_load.append(dset_col.sum('bottom_top')) 
+                
+                dset_col = dset_col.sel(bottom_top = slice(0,30))
+                dset_tropload.append(dset_col.sum('bottom_top'))
 
-                    dset_col = dset*6.022e23*mod_thick/molec_vol.data 
-                    dset_load.append(dset_col.sum('bottom_top'))       
+                dset_interp = interplevel(dset,pres,np.array(plevs)/100)          
+                dset_plev.append(dset_interp) 
 
-                    dset_interp = interplevel(dset,pres,np.array(plevs)/100)          
-                    dset_plev.append(dset_interp) 
+                dset_surf = dset*varname_sconc.loc[i]['mweight']*1e-3/molec_vol
+                dset_surf = dset_surf.sel(bottom_top=0)
+                dset_sconc.append(dset_surf)
+                
+                dset_surface = dset.sel(bottom_top=0)
+                dset_svmr.append(dset_surface) 
 
-                    dset_surf = dset*varname_sconc.loc[i]['mweight']*1e-3/molec_vol
-                    dset_surf = dset_surf.sel(bottom_top=0)
-                    dset_sconc.append(dset_surf)
+            dset_load=xray.concat(dset_load,'Time')
+            dset_tropload=xray.concat(dset_tropload,'Time')
+            dset_plev=xray.concat(dset_plev,'Time')
+            dset_sconc=xray.concat(dset_sconc,'Time')
+            dset_svmr = xray.concat(dset_svmr,'Time')
+            
+            lon = dset_plev.XLONG[0,:].data
+            lat = dset_plev.XLAT[:,0].data
+            time = np.array((dset_plev.Time.data - np.datetime64('2015-01-01T00')),dtype=np.float)/(1e9*3600*24)
+            level = np.array(plevs)
+            scale = 1e-6
+            
+            table='CMIP6_1hr_gaseous.json'
+            units_plev='mol mol-1'
+            cmorname_plev = varname_plev.loc[i]['cmorname']
+            cmorize_3d(lat,lon,time,level,dset_plev.data,units_plev,scale,cmorname_plev,table)
 
-                dset_load=xray.concat(dset_load,'Time')    
-                dset_plev=xray.concat(dset_plev,'Time')
-                dset_sconc=xray.concat(dset_sconc,'Time')
-                (lat, lon, level, time) = get_attrs(dset_plev)
-                scale = 1e-6
-                table='CMIP6_1hr_gaseous.json'
-                units_plev='mol mol-1'
-                cmorname_plev = varname_plev.loc[i]['cmorname']
-                cmorize_3d(lat,lon,time,level,dset_plev.data,units_plev,scale,cmorname_plev,table)
+            units_load='molec m-2'
+            cmorname_load = 'load' + varname_plev.loc[i]['cmorname']
+            cmorize_2d(lat,lon,time,dset_load.data,units_load,scale,cmorname_load,table)
+            
 
-                units_load='molec m-2'
-                cmorname_load = 'load' + varname_plev.loc[i]['cmorname']
-                cmorize_2d(lat,lon,time,dset_load.data,units_load,scale,cmorname_load,table)
+            units_tropload='molec m-2'
+            cmorname_tropload = 'tropload' + varname_plev.loc[i]['cmorname']
+            cmorize_2d(lat,lon,time,dset_tropload.data,units_tropload,scale,cmorname_tropload,table)
 
-                units_sconc ='kg m-3'
-                cmorname_sconc = varname_sconc.loc[i]['cmorname']
-                cmorize_2d(lat,lon,time,dset_sconc.data,units_sconc,scale,cmorname_sconc,table)
-            else:
-                print(varname_plev.loc[i]['varname']+' is not there in RACM mechanism')
+            units_sconc ='kg m-3'
+            cmorname_sconc = varname_sconc.loc[i]['cmorname']
+            cmorize_2d(lat,lon,time,dset_sconc.data,units_sconc,scale,cmorname_sconc,table)
 
+            scale = 1
+            units_svmr='ppmv'
+            cmorname_svmr = 'svmr' + varname_plev.loc[i]['cmorname']
+            cmorize_2d(lat,lon,time,dset_svmr.data,units_svmr,scale,cmorname_svmr,table)
     import time as tmod
     seconds = tmod.time()
     local_time = tmod.ctime(seconds)
