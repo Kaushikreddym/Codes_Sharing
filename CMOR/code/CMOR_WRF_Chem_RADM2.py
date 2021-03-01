@@ -729,6 +729,7 @@ for mon_no in [ '01','02','03','04','05','06','07','10','11','12']:
         if flag_cdnc==1:
             units = "m-2"
             table = 'CMIP6_cloud_1hr.json'
+            cmorname = 'cldnvi'
             cmorize_2d(
                 lat,
                 lon,
