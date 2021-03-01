@@ -1,0 +1,15 @@
+varname,cmorname,scale,units
+no2,no2,1,mol mol-1
+no,no,1,mol mol-1
+no3,no3g,1,mol mol-1
+n2o5,n2o5,1,mol mol-1
+hno3,hno3,1,mol mol-1
+o3,o3,1,mol mol-1
+h2o2,h2o2,1,mol mol-1
+so2,so2,1,mol mol-1
+sulf,sulf,1,mol mol-1
+co,co,1,mol mol-1
+ho,oh,1,mol mol-1
+hcho,hcho,1,mol mol-1
+nh3,nh3,1,mol mol-1
+hono,hono,1,mol mol-1

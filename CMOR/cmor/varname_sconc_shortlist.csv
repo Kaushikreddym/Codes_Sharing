@@ -1,0 +1,15 @@
+varname,cmorname,scale,units,mweight
+no2,sfno2,1,kg m-3,46
+no,sfno,1,kg m-3,30
+no3,sfno3g,1,kg m-3,62
+n2o5,sfn2o5,1,kg m-3,108
+hno3,sfhno3,1,kg m-3,63
+o3,sfo3,1,kg m-3,48
+h2o2,sfh2o2,1,kg m-3,34
+so2,sfso2,1,kg m-3,64
+sulf,sfsulf,1,kg m-3,98
+co,sfco,1,kg m-3,28
+ho,sfoh,1,kg m-3,17
+hcho,sfhcho,1,kg m-3,30
+nh3,sfnh3,1,kg m-3,17
+hono,sfhono,1,kg m-3,47
