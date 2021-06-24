@@ -1,0 +1,76 @@
+{
+           "_control_vocabulary_file": "CMIP6_CV.json",
+           "_AXIS_ENTRY_FILE":         "CMIP6_coordinate.json",
+           "_FORMULA_VAR_FILE":        "CMIP6_formula_terms.json",
+           "_cmip6_option":           "CMIP6",
+
+           "tracking_prefix":        "hdl:21.14100",
+           "activity_id":            "NCAP-COALESCE",
+           "outpath":                "/mnt/nas/DATA/kaushik/proc/try/NOARI",
+
+           "#experiment_id":         "CMIP6 valid experiment_ids are found in CMIP6_CV.json",
+           "experiment_id":          "BASELINE",
+           "sub_experiment_id":      "none",
+           "sub_experiment":         "none",
+
+           "source_type":            "AOGCM",
+           "parent_mip_era":         "N/A",
+           "mip_era":                "NCAP-COALESCE",
+           "calendar":               "gregorian",
+
+           "realization_index":      "1",
+           "initialization_index":   "1",
+           "physics_index":          "1",
+           "forcing_index":          "1",
+
+           "#contact ":              "Not required",
+           "contact ":               "kaushik@iitb.ac.in",
+
+           "#history":               "not required, supplemented by CMOR",
+           "#history":                "Output from archivcl_A1.nce/giccm_03_std_2xCO2_2256.",
+
+           "#comment":               "Not required",
+           "#comment":                "",
+
+           "#references":            "Not required",
+           "references": "Model described by Grell et al. Atmospheric Environment (2005)",
+
+           "grid":                   "gs2x2",
+           "grid_label":             "gn",
+           "nominal_resolution":     "25 km",
+
+           "institution_id":         "IIT-Bombay",
+
+           "parent_experiment_id":   "BASELINE",
+           "parent_activity_id":     "NCAP-COALESCE",
+           "parent_mip_era":         "NCAP-COALESCE",
+
+           "parent_source_id":       "IITB-WRF_Chem",
+           "parent_time_units":      "days since 2015-01-01",
+
+           "parent_variant_label":   "r1i1p1f3",
+
+           "branch_method":          "Spin-up documentation",
+
+           "branch_time_in_child":   0,
+           "branch_time_in_parent":  0,
+
+
+           "#run_variant":           "Description of run variant (Recommended).",
+           "#run_variant":            "forcing: black carbon aerosol only",
+
+           "source_id":               "IITB-WRF_Chem",
+
+           "#source":                "source title, first part is source_id",
+           "source":                 "IIT-Bombay (2015)",
+
+
+           "#output_path_template":   "Template for output path directory using tables keys or global attributes",
+           "#output_path_template":    "<mip_era><activity_id><institution_id><source_id><experiment_id><_member_id><table><variable_id><grid_label><version>",
+           "output_path_template":    "<mip_era><activity_id><institution_id><source_id><experiment_id><_member_id><table><variable_id><grid_label>",
+           "output_file_template":    "<variable_id><table><source_id><experiment_id><_member_id><grid_label>",
+
+           "license": "NCAP-COALESCE model data produced by IITB is licensed under a Creative Commons Attribution ShareAlike 4.0 International License (https://creativecommons.org/licenses). Consult https://pcmdi.llnl.gov/CMIP6/TermsOfUse for terms of use governing CMIP6 output, including citation requirements and proper acknowledgment. Further information about this data, including some limitations, can be found via the further_info_url (recorded as a global attribute in this file) and at https:///pcmdi.llnl.gov/. The data producers and data providers make no warranty, either express or implied, including, but not limited to, warranties of merchantability and fitness for a particular purpose. All liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law."
+
+}
+

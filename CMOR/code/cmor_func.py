@@ -69,7 +69,7 @@ def cmorize_2d(
     scale,
     cmorname,
     table,
-    user_input='common_user_input_chem.json'
+    user_input='common_user_input.json'
     ):
 
     # 'cmorize_2d' takes arrays and corresponding dimensions to convert data into CF compliant format
@@ -105,7 +105,7 @@ def cmorize_3d(
     scale,
     cmorname,
     table,
-    user_input='common_user_input_chem.json'
+    user_input='common_user_input.json'
     ):
 
     # similar to the 'cmorize_2d' function but for 3d variables with added pressure dimension

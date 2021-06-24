@@ -3627,6 +3627,42 @@
 			"out_name": "prcprof",
 			"type": "real",
 			"positive": ""
-		}
+		},
+                "mrlso": {
+                        "frequency": "1hr", 
+                        "modeling_realm": "land", 
+                        "standard_name": "liquid_water_content_of_first_soil_layer", 
+                        "units": "m3 m-3", 
+                        "cell_methods": "area: mean where land time: mean", 
+                        "cell_measures": "area: areacella", 
+                        "long_name": "Soil Liquid Water Content in first layer", 
+                        "comment": "The volumteric mass (summed over first layers) of liquid water.", 
+                        "dimensions": "longitude latitude time", 
+                        "out_name": "mrlso", 
+                        "type": "real", 
+                        "positive": "", 
+                        "valid_min": "", 
+                        "valid_max": "", 
+                        "ok_min_mean_abs": "", 
+                        "ok_max_mean_abs": ""
+               },
+               "emidust": {
+                        "frequency": "1hr", 
+                        "modeling_realm": "aerosol", 
+                        "standard_name": "tendeny_of_atmosphere_mass_content_of_dust_dry_aerosol_particles_due_to_emission", 
+                        "units": "kg m-2 s-1", 
+                        "cell_methods": "area: time: mean", 
+                        "cell_measures": "area: areacella", 
+                        "long_name": "Total Emission Rate of Dust", 
+                        "comment": "Integrate 3D emission field vertically to 2D field.", 
+                        "dimensions": "longitude latitude time", 
+                        "out_name": "emidust", 
+                        "type": "real", 
+                        "positive": "", 
+                        "valid_min": "", 
+                        "valid_max": "", 
+                        "ok_min_mean_abs": "", 
+                        "ok_max_mean_abs": ""
+               },
 	}
 }
